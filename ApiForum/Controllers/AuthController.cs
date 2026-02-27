@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using static ApiForum.DTO.LoginDTO;
 using static ApiForum.DTO.RegisterDTO;
 
-namespace ApiForum.Controller
+namespace ApiForum.Controllers
 {
     [ApiController]
     [Route("api/auth")]

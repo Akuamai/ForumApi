@@ -72,7 +72,7 @@ using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-    string[] roles = { "Admin", "User" };
+    string[] roles = { "Admin", "User", "Manager" };
 
     foreach (var role in roles)
     {
