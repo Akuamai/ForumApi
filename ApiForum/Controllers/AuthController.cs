@@ -3,8 +3,6 @@ using ApiForum.Models;
 using ApiForum.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using static ApiForum.DTO.LoginDTO;
-using static ApiForum.DTO.RegisterDTO;
 
 namespace ApiForum.Controllers
 {
@@ -22,7 +20,7 @@ namespace ApiForum.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterDto dto)
+        public async Task<IActionResult> Register([FromBody] RegisterDto dto)
         {
             var user = new ApplicationUser
             {
@@ -40,7 +38,7 @@ namespace ApiForum.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginDto dto)
+        public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null || !await _userManager.CheckPasswordAsync(user, dto.Password))

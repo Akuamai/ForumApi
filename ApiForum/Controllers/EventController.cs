@@ -42,7 +42,7 @@ namespace ApiForum.Controllers
         }
 
         // ── BACK : création (Admin / Manager) ──────────────────────────────
-        [Authorize(Roles = "Admin,Manager")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] EventDTO dto)
         {
@@ -63,7 +63,7 @@ namespace ApiForum.Controllers
             return CreatedAtAction(nameof(GetById), new { id = evt.Id }, evt);
         }
 
-        [Authorize(Roles = "Admin,Manager")]
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] EventDTO dto)
         {
@@ -86,19 +86,24 @@ namespace ApiForum.Controllers
             return Ok(evt);
         }
 
-        [Authorize(Roles = "Admin,Manager")]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var evt = await _context.Events.FindAsync(id);
+            var evt = await _context.Events
+                .Include(e => e.Resources)
+                .Include(e => e.Registrations)
+                .FirstOrDefaultAsync(e => e.Id == id);
             if (evt == null) return NotFound();
+            _context.EventResources.RemoveRange(evt.Resources);
+            _context.EventRegistrations.RemoveRange(evt.Registrations);
             _context.Events.Remove(evt);
             await _context.SaveChangesAsync();
             return NoContent();
         }
 
         // ── FRONT : inscription / désinscription utilisateur ───────────────
-        [Authorize(Roles = "Admin,User,Manager")]
+        [Authorize(Roles = "Admin,User")]
         [HttpPost("{id}/register")]
         public async Task<IActionResult> Register(int id)
         {
@@ -119,7 +124,7 @@ namespace ApiForum.Controllers
             return Ok("Inscription confirmée.");
         }
 
-        [Authorize(Roles = "Admin,User,Manager")]
+        [Authorize(Roles = "Admin,User")]
         [HttpDelete("{id}/register")]
         public async Task<IActionResult> Unregister(int id)
         {
@@ -134,7 +139,7 @@ namespace ApiForum.Controllers
         }
 
         // ── BACK : liste des inscrits à un événement (Admin / Manager) ─────
-        [Authorize(Roles = "Admin,Manager")]
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id}/registrations")]
         public async Task<IActionResult> GetRegistrations(int id)
         {

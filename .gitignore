@@ -291,6 +291,9 @@ forum-front/dist/
 forum-front/.env
 forum-front/.env.local
 
+# wwwroot généré par le build React
+ApiForum/wwwroot/
+
 # Visual Studio 6 build log
 *.plg
 

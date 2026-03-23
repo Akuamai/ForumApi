@@ -1,7 +1,10 @@
 namespace ApiForum.DTO
 {
-    public class RegisterDTO
+    public class RegisterDto
     {
-        public record RegisterDto(string FirstName, string LastName, string Email, string Password);
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
+        public string Password { get; set; }
     }
 }
