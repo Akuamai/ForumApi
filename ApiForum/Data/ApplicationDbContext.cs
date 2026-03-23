@@ -12,5 +12,6 @@ namespace ApiForum.Data
         public DbSet<Event> Events { get; set; }
         public DbSet<EventRegistration> EventRegistrations { get; set; }
         public DbSet<Presta> Prestas { get; set; }
+        public DbSet<EventResource> EventResources { get; set; }
     }
 }

@@ -285,6 +285,12 @@ FakesAssemblies/
 .ntvs_analysis.dat
 node_modules/
 
+# React front
+forum-front/node_modules/
+forum-front/dist/
+forum-front/.env
+forum-front/.env.local
+
 # Visual Studio 6 build log
 *.plg
 
