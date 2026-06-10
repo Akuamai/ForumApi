@@ -4,6 +4,8 @@ import { getUsers, getUser, createUser, updateUser, deleteUser, assignRole, remo
 const emptyForm = { firstName: '', lastName: '', email: '', password: '', role: 'User' }
 const emptyEdit = { firstName: '', lastName: '', email: '', newPassword: '' }
 
+// Page Admin — gestion complète des utilisateurs
+// Permet de créer, modifier, supprimer des comptes et d'assigner/retirer des rôles
 export default function AdminUsers() {
   const [users, setUsers] = useState([])
   const [roles, setRoles] = useState([])

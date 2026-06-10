@@ -8,16 +8,25 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
+// ── Contrôleurs ────────────────────────────────────────────────────────────
+// Ignore les références circulaires EF Core lors de la sérialisation JSON
+// (évite les erreurs 500 sur les relations Event → Registrations → Event...)
 builder.Services.AddControllers()
     .AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles);
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+// ── Swagger ────────────────────────────────────────────────────────────────
+// Interface de documentation et test des endpoints (disponible en dev uniquement)
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// ── Base de données ────────────────────────────────────────────────────────
+// Connexion SQL Server via la chaîne définie dans appsettings.json
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// ── Identity ───────────────────────────────────────────────────────────────
+// Gestion des utilisateurs et rôles avec ASP.NET Core Identity
+// Règles : mot de passe min 8 chars + chiffre, 5 tentatives max, email unique
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.Password.RequiredLength = 8;
@@ -28,6 +37,9 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
+// ── Authentification JWT ───────────────────────────────────────────────────
+// Définit JWT Bearer comme schéma d'authentification par défaut
+// Le token est validé sur : issuer, audience, durée de vie et signature
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -51,6 +63,8 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
 
+// ── CORS ───────────────────────────────────────────────────────────────────
+// Autorise les requêtes cross-origin depuis le front React en développement
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontPolicy", policy =>
@@ -61,13 +75,16 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// ── Middleware de développement ────────────────────────────────────────────
+// Swagger uniquement en environnement de développement
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+// ── Pipeline HTTP ──────────────────────────────────────────────────────────
+// Ordre important : Auth → CORS → HTTPS → fichiers statiques → routes
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -75,14 +92,20 @@ app.UseCors("FrontPolicy");
 
 app.UseHttpsRedirection();
 
+// Sert les fichiers statiques du front React buildé dans wwwroot/
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Redirige toutes les routes inconnues vers index.html (routing React côté client)
 app.MapFallbackToFile("/index.html");
 
+// ── Initialisation au démarrage ────────────────────────────────────────────
+// Crée les rôles Admin et User s'ils n'existent pas encore en base
+// Puis promote admin@test.com en Admin s'il existe sans ce rôle
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
@@ -105,5 +128,17 @@ using (var scope = app.Services.CreateScope())
         await userManager.AddToRoleAsync(adminUser, "Admin");
     }
 }
+
+// ── Ouverture automatique du navigateur ────────────────────────────────────
+// Se déclenche uniquement quand l'API est complètement démarrée
+// Évite d'ouvrir le navigateur avant que la base de données soit prête
+app.Lifetime.ApplicationStarted.Register(() =>
+{
+    Task.Run(async () =>
+    {
+        await Task.Delay(500);
+        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("http://localhost:5000") { UseShellExecute = true });
+    });
+});
 
 app.Run();

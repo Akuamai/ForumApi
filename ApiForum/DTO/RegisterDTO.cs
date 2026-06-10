@@ -1,5 +1,6 @@
 namespace ApiForum.DTO
 {
+    // DTO pour la création d'un nouveau compte utilisateur
     public class RegisterDto
     {
         public string FirstName { get; set; }

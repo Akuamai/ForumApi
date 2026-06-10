@@ -1,6 +1,9 @@
 import { createContext, useContext, useState, useEffect, useRef } from 'react'
 import { jwtDecode } from 'jwt-decode'
 
+// Contexte d'authentification global
+// Fournit : token, user (décodé), role, isAdmin, saveToken, logout
+// Gère aussi la déconnexion automatique à l'expiration du token
 const AuthContext = createContext()
 
 export function AuthProvider({ children }) {

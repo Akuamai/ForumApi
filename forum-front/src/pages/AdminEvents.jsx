@@ -17,6 +17,8 @@ const messages = {
   showMore: n => `+${n} de plus`
 }
 
+// Page Admin — calendrier interactif pour créer, modifier et supprimer les événements
+// Permet aussi de consulter la liste des inscrits par événement
 export default function AdminEvents() {
   const [events, setEvents] = useState([])
   const [form, setForm] = useState(emptyForm)
@@ -151,7 +153,7 @@ export default function AdminEvents() {
                     onChange={e => setForm({ ...form, title: e.target.value })} />
                 </div>
                 <div className="col-12">
-                  <label className="form-label">Description</label>
+                  <label className="form-label">Description de l'événement et des prestations</label>
                   <textarea className="form-control forum-input" rows={2} value={form.description}
                     onChange={e => setForm({ ...form, description: e.target.value })} />
                 </div>

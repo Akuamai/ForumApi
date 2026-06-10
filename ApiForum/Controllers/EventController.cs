@@ -5,9 +5,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 
 namespace ApiForum.Controllers
 {
+    // Contrôleur principal pour la gestion des événements
+    // Route : /api/event
     [ApiController]
     [Route("api/[controller]")]
     public class EventController : ControllerBase
@@ -19,7 +22,16 @@ namespace ApiForum.Controllers
             _context = context;
         }
 
-        // ── FRONT : liste publique ──────────────────────────────────────────
+        // Supprime toutes les balises HTML d'une chaîne (ex: <p class="text-muted">)
+        private static string StripHtml(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input)) return input;
+            return Regex.Replace(input, "<[^>]*>", string.Empty).Trim();
+        }
+
+        // ── GET /api/event ─────────────────────────────────────────────────
+        // Retourne tous les événements avec leurs ressources et inscrits
+        // Accessible publiquement (pas de [Authorize])
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -30,6 +42,8 @@ namespace ApiForum.Controllers
             return Ok(events);
         }
 
+        // ── GET /api/event/{id} ────────────────────────────────────────────
+        // Retourne un événement par son id avec ressources et inscrits
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -41,7 +55,9 @@ namespace ApiForum.Controllers
             return Ok(evt);
         }
 
-        // ── BACK : création (Admin / Manager) ──────────────────────────────
+        // ── POST /api/event ────────────────────────────────────────────────
+        // Crée un nouvel événement avec ses ressources (Admin uniquement)
+        // La description est nettoyée des balises HTML avant sauvegarde
         [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] EventDTO dto)
@@ -49,7 +65,7 @@ namespace ApiForum.Controllers
             var evt = new Event
             {
                 Title = dto.Title,
-                Description = dto.Description,
+                Description = StripHtml(dto.Description),
                 StartDate = dto.StartDate,
                 EndDate = dto.EndDate,
                 Resources = dto.Resources.Select(r => new EventResource
@@ -63,6 +79,9 @@ namespace ApiForum.Controllers
             return CreatedAtAction(nameof(GetById), new { id = evt.Id }, evt);
         }
 
+        // ── PUT /api/event/{id} ────────────────────────────────────────────
+        // Met à jour un événement existant (Admin uniquement)
+        // Supprime et recrée les ressources pour simplifier la mise à jour
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] EventDTO dto)
@@ -71,10 +90,11 @@ namespace ApiForum.Controllers
             if (evt == null) return NotFound();
 
             evt.Title = dto.Title;
-            evt.Description = dto.Description;
+            evt.Description = StripHtml(dto.Description);
             evt.StartDate = dto.StartDate;
             evt.EndDate = dto.EndDate;
 
+            // Suppression des anciennes ressources avant de les remplacer
             _context.EventResources.RemoveRange(evt.Resources);
             evt.Resources = dto.Resources.Select(r => new EventResource
             {
@@ -86,6 +106,10 @@ namespace ApiForum.Controllers
             return Ok(evt);
         }
 
+        // ── DELETE /api/event/{id} ─────────────────────────────────────────
+        // Supprime un événement et toutes ses données liées (Admin uniquement)
+        // Les ressources et inscriptions sont supprimées manuellement
+        // pour éviter les erreurs de contrainte de clé étrangère
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
@@ -102,7 +126,9 @@ namespace ApiForum.Controllers
             return NoContent();
         }
 
-        // ── FRONT : inscription / désinscription utilisateur ───────────────
+        // ── POST /api/event/{id}/register ──────────────────────────────────
+        // Inscrit l'utilisateur connecté à un événement
+        // Vérifie qu'il n'est pas déjà inscrit avant d'ajouter
         [Authorize(Roles = "Admin,User")]
         [HttpPost("{id}/register")]
         public async Task<IActionResult> Register(int id)
@@ -124,6 +150,8 @@ namespace ApiForum.Controllers
             return Ok("Inscription confirmée.");
         }
 
+        // ── DELETE /api/event/{id}/register ───────────────────────────────
+        // Désinscrit l'utilisateur connecté d'un événement
         [Authorize(Roles = "Admin,User")]
         [HttpDelete("{id}/register")]
         public async Task<IActionResult> Unregister(int id)
@@ -138,7 +166,8 @@ namespace ApiForum.Controllers
             return Ok("Désinscription effectuée.");
         }
 
-        // ── BACK : liste des inscrits à un événement (Admin / Manager) ─────
+        // ── GET /api/event/{id}/registrations ─────────────────────────────
+        // Retourne la liste des utilisateurs inscrits à un événement (Admin uniquement)
         [Authorize(Roles = "Admin")]
         [HttpGet("{id}/registrations")]
         public async Task<IActionResult> GetRegistrations(int id)

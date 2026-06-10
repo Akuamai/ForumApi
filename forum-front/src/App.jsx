@@ -11,6 +11,8 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 import './styles/forum.css'
 
+// Composant racine : définit le routing et enveloppe l'app dans AuthProvider
+// Routes admin protégées par ProtectedRoute adminOnly={true}
 export default function App() {
   return (
     <AuthProvider>

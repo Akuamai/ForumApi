@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ApiForum.Controllers
 {
+    // Contrôleur d'authentification
+    // Route : /api/auth
     [ApiController]
     [Route("api/auth")]
     public class AuthController : ControllerBase
@@ -19,6 +21,8 @@ namespace ApiForum.Controllers
             _config = config;
         }
 
+        // ── POST /api/auth/register ────────────────────────────────────────
+        // Crée un nouveau compte utilisateur et lui attribue le rôle "User"
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto dto)
         {
@@ -33,10 +37,13 @@ namespace ApiForum.Controllers
             var result = await _userManager.CreateAsync(user, dto.Password);
             if (!result.Succeeded) return BadRequest(result.Errors);
 
+            // Tout nouveau compte reçoit le rôle User par défaut
             await _userManager.AddToRoleAsync(user, "User");
             return Ok("Compte créé avec succès.");
         }
 
+        // ── POST /api/auth/login ───────────────────────────────────────────
+        // Vérifie les identifiants et retourne un token JWT si valides
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
@@ -44,6 +51,7 @@ namespace ApiForum.Controllers
             if (user == null || !await _userManager.CheckPasswordAsync(user, dto.Password))
                 return Unauthorized("Email ou mot de passe incorrect.");
 
+            // Récupère les rôles pour les inclure dans le token JWT
             var roles = await _userManager.GetRolesAsync(user);
             var token = JwtTokenService.Generate(user, roles, _config);
             return Ok(new { token });

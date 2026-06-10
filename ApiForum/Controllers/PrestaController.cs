@@ -8,6 +8,8 @@ using System.Security.Claims;
 
 namespace ApiForum.Controllers
 {
+    // Contrôleur de gestion des prestations
+    // Route : /api/presta
     [ApiController]
     [Route("api/[controller]")]
     public class PrestaController : ControllerBase
@@ -19,6 +21,8 @@ namespace ApiForum.Controllers
             _context = context;
         }
 
+        // ── GET /api/presta ────────────────────────────────────────────────
+        // Retourne toutes les prestations (accès public)
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -26,6 +30,8 @@ namespace ApiForum.Controllers
             return Ok(prestas);
         }
 
+        // ── GET /api/presta/{id} ───────────────────────────────────────────
+        // Retourne une prestation par son id
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -34,6 +40,9 @@ namespace ApiForum.Controllers
             return Ok(presta);
         }
 
+        // ── POST /api/presta ───────────────────────────────────────────────
+        // Crée une nouvelle prestation
+        // Enregistre l'id de l'utilisateur créateur dans CreatedBy
         [Authorize(Roles = "Admin,User,Manager")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] PrestaDTO dto)
@@ -51,6 +60,8 @@ namespace ApiForum.Controllers
             return CreatedAtAction(nameof(GetById), new { id = presta.Id }, presta);
         }
 
+        // ── DELETE /api/presta/{id} ────────────────────────────────────────
+        // Supprime une prestation (Admin ou Manager uniquement)
         [Authorize(Roles = "Admin,Manager")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)

@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ApiForum.Controllers
 {
+    // Contrôleur de gestion des utilisateurs et rôles (Admin uniquement)
+    // Route : /api/admin
     [ApiController]
     [Route("api/admin")]
     [Authorize(Roles = "Admin")]
@@ -20,6 +22,8 @@ namespace ApiForum.Controllers
             _userManager = userManager;
         }
 
+        // ── GET /api/admin/users ───────────────────────────────────────────
+        // Retourne tous les utilisateurs avec leurs rôles
         [HttpGet("users")]
         public async Task<IActionResult> GetUsers()
         {
@@ -33,6 +37,8 @@ namespace ApiForum.Controllers
             return Ok(result);
         }
 
+        // ── GET /api/admin/users/{userId} ──────────────────────────────────
+        // Retourne un utilisateur spécifique avec ses rôles
         [HttpGet("users/{userId}")]
         public async Task<IActionResult> GetUser(string userId)
         {
@@ -42,6 +48,8 @@ namespace ApiForum.Controllers
             return Ok(new { user.Id, user.Email, user.FirstName, user.LastName, roles });
         }
 
+        // ── POST /api/admin/users ──────────────────────────────────────────
+        // Crée un utilisateur avec un rôle défini (User par défaut si non précisé)
         [HttpPost("users")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserDto dto)
         {
@@ -59,6 +67,9 @@ namespace ApiForum.Controllers
             return Ok(new { user.Id, user.Email, user.FirstName, user.LastName });
         }
 
+        // ── PUT /api/admin/users/{userId} ──────────────────────────────────
+        // Met à jour les infos d'un utilisateur
+        // Si NewPassword est fourni, réinitialise le mot de passe via token
         [HttpPut("users/{userId}")]
         public async Task<IActionResult> UpdateUser(string userId, [FromBody] UpdateUserDto dto)
         {
@@ -73,6 +84,7 @@ namespace ApiForum.Controllers
             var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded) return BadRequest(result.Errors);
 
+            // Changement de mot de passe optionnel
             if (!string.IsNullOrEmpty(dto.NewPassword))
             {
                 var token = await _userManager.GeneratePasswordResetTokenAsync(user);
@@ -83,6 +95,8 @@ namespace ApiForum.Controllers
             return Ok(new { user.Id, user.Email, user.FirstName, user.LastName });
         }
 
+        // ── DELETE /api/admin/users/{userId} ──────────────────────────────
+        // Supprime un utilisateur définitivement
         [HttpDelete("users/{userId}")]
         public async Task<IActionResult> DeleteUser(string userId)
         {
@@ -92,6 +106,8 @@ namespace ApiForum.Controllers
             return NoContent();
         }
 
+        // ── POST /api/admin/users/{userId}/roles/{roleName} ────────────────
+        // Assigne un rôle à un utilisateur (vérifie que le rôle existe et n'est pas déjà attribué)
         [HttpPost("users/{userId}/roles/{roleName}")]
         public async Task<IActionResult> AssignRole(string userId, string roleName)
         {
@@ -103,6 +119,8 @@ namespace ApiForum.Controllers
             return Ok();
         }
 
+        // ── DELETE /api/admin/users/{userId}/roles/{roleName} ──────────────
+        // Retire un rôle d'un utilisateur
         [HttpDelete("users/{userId}/roles/{roleName}")]
         public async Task<IActionResult> RemoveRole(string userId, string roleName)
         {
@@ -113,6 +131,8 @@ namespace ApiForum.Controllers
             return Ok();
         }
 
+        // ── GET /api/admin/roles ───────────────────────────────────────────
+        // Retourne la liste de tous les rôles disponibles
         [HttpGet("roles")]
         public async Task<IActionResult> GetRoles()
         {
@@ -121,6 +141,7 @@ namespace ApiForum.Controllers
         }
     }
 
+    // DTO pour la création d'un utilisateur par un Admin
     public class CreateUserDto
     {
         public string FirstName { get; set; }
@@ -130,11 +151,12 @@ namespace ApiForum.Controllers
         public string Role { get; set; }
     }
 
+    // DTO pour la modification d'un utilisateur existant
     public class UpdateUserDto
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; }
-        public string NewPassword { get; set; }
+        public string NewPassword { get; set; } // Optionnel : laisser vide pour ne pas changer
     }
 }

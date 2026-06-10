@@ -16,6 +16,8 @@ const messages = {
   showMore: n => `+${n} de plus`
 }
 
+// Page publique des événements — affiche un calendrier + liste défilante
+// Permet l'inscription/désinscription si l'utilisateur est connecté
 export default function Events() {
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
@@ -86,7 +88,7 @@ export default function Events() {
 
           {/* Liste défilante */}
           <div className="events-scroll-list">
-            {events.length === 0 && <p className="text-muted">Aucun événement disponible.</p>}
+            {events.length === 0 && <p style={{ color: 'white' }}>Aucun événement disponible.</p>}
             {events.map(evt => (
               <div key={evt.id} className="event-card" onClick={() => setSelected(evt)} style={{ cursor: 'pointer' }}>
                 <div className="event-card-header">
@@ -96,7 +98,7 @@ export default function Events() {
                   <h5 className="event-title">{evt.title}</h5>
                 </div>
                 <div className="event-card-body">
-                  {evt.description && <p className="event-description">{evt.description}</p>}
+                  {evt.description && <p style={{ color: 'var(--text)', fontSize: '0.88rem', margin: 0 }}>{evt.description}</p>}
                   <div className="event-dates">
                     <span>🕐 {new Date(evt.startDate).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}</span>
                     <span>🏁 {new Date(evt.endDate).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}</span>
@@ -143,7 +145,7 @@ export default function Events() {
                 <button className="modal-close" onClick={() => setSelected(null)}>✕</button>
               </div>
 
-              {selected.description && <p className="text-muted mb-3">{selected.description}</p>}
+              {selected.description && <p style={{ color: '#e2e8f0', marginBottom: '1rem' }}>{selected.description}</p>}
 
               <div className="event-dates mb-3">
                 <span>🕐 Début : {new Date(selected.startDate).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}</span>

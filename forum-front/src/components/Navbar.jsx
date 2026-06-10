@@ -1,6 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
+// Barre de navigation principale
+// Affiche les liens admin si l'utilisateur a le rôle Admin
 export default function Navbar() {
   const { user, isAdmin, logout } = useAuth()
   const navigate = useNavigate()

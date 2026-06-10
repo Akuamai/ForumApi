@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { login } from '../api/auth'
 import { useAuth } from '../context/AuthContext'
 
+// Page de connexion — soumet email/mot de passe, sauvegarde le token JWT et redirige vers /events
 export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')

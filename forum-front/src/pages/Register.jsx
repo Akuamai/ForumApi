@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { register } from '../api/auth'
 
+// Page d'inscription — créé un compte utilisateur et redirige vers /login après succès
 export default function Register() {
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '' })
   const [error, setError] = useState('')

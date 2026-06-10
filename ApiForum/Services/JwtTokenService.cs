@@ -6,8 +6,11 @@ using System.Text;
 
 namespace ApiForum.Services
 {
+    // Service de génération de tokens JWT
     public class JwtTokenService
     {
+        // Génère un token JWT signé contenant l'id, l'email et les rôles de l'utilisateur
+        // La durée de vie et les paramètres sont lus depuis appsettings.json (Jwt:*)
         public static string Generate(ApplicationUser user, IList<string> roles, IConfiguration config)
         {
             var claims = new List<Claim>
@@ -16,6 +19,7 @@ namespace ApiForum.Services
             new Claim(ClaimTypes.Email, user.Email)
         };
 
+            // Ajoute un claim de rôle par rôle attribué à l'utilisateur
             foreach (var role in roles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
