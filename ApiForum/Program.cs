@@ -103,6 +103,17 @@ app.MapControllers();
 // Redirige toutes les routes inconnues vers index.html (routing React côté client)
 app.MapFallbackToFile("/index.html");
 
+// ── Ouverture automatique du navigateur ────────────────────────────────────
+// Déclenché une seule fois quand l'API est prête, depuis le .bat uniquement
+app.Lifetime.ApplicationStarted.Register(() =>
+{
+    Task.Run(async () =>
+    {
+        await Task.Delay(500);
+        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("http://localhost:5000") { UseShellExecute = true });
+    });
+});
+
 // ── Initialisation au démarrage ────────────────────────────────────────────
 // Crée les rôles Admin et User s'ils n'existent pas encore en base
 // Puis promote admin@test.com en Admin s'il existe sans ce rôle
@@ -128,17 +139,5 @@ using (var scope = app.Services.CreateScope())
         await userManager.AddToRoleAsync(adminUser, "Admin");
     }
 }
-
-// ── Ouverture automatique du navigateur ────────────────────────────────────
-// Se déclenche uniquement quand l'API est complètement démarrée
-// Évite d'ouvrir le navigateur avant que la base de données soit prête
-app.Lifetime.ApplicationStarted.Register(() =>
-{
-    Task.Run(async () =>
-    {
-        await Task.Delay(500);
-        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("http://localhost:5000") { UseShellExecute = true });
-    });
-});
 
 app.Run();
